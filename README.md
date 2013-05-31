@@ -28,7 +28,7 @@ dispatch your requests:
 
 ```go
 timeout := time.Duration(1 * time.Second)
-client := NewHttpClient(timeout)
+client := httpclient.NewClient(timeout)
 
 req, err := http.NewRequest("GET", "http://example.org/", nil)
 if err != nil {

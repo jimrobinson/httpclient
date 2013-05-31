@@ -44,7 +44,7 @@ func (h *httpTestHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func TestDo(t *testing.T) {
 
 	timeout := time.Duration(1 * time.Second)
-	client := NewHttpClient(timeout)
+	client := NewClient(timeout)
 
 	server := httptest.NewServer(&httpTestHandler{Mutex: new(sync.Mutex)})
 	defer server.CloseClientConnections()
@@ -85,9 +85,9 @@ func TestDo(t *testing.T) {
 	}
 }
 
-func BenchmarkHttpClient(b *testing.B) {
+func BenchmarkClient(b *testing.B) {
 	timeout := time.Duration(1 * time.Second)
-	client := NewHttpClient(timeout)
+	client := NewClient(timeout)
 
 	server := httptest.NewServer(&httpTestHandler{Mutex: new(sync.Mutex)})
 	defer server.CloseClientConnections()

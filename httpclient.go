@@ -6,18 +6,18 @@ import (
 	"time"
 )
 
-// HttpClient configures a timeout on the reciept of response headers
+// Client configures a timeout on the reciept of response headers
 // and the read of response bodys from an http server.  It treats the
 // configured timeout as absolute, not as a deadline.
-type HttpClient struct {
+type Client struct {
 	Transport *http.Transport
 	Client    *http.Client
 	Timeout   time.Duration
 }
 
-// NewHttpClient returns an HttpClient configured to timeout requests
+// NewClient returns an Client configured to timeout requests
 // that take longer than the specified timeout.
-func NewHttpClient(timeout time.Duration) (hr *HttpClient) {
+func NewClient(timeout time.Duration) (hr *Client) {
 
 	transport := &http.Transport{
 		ResponseHeaderTimeout: timeout,
@@ -27,7 +27,7 @@ func NewHttpClient(timeout time.Duration) (hr *HttpClient) {
 		Transport: transport,
 	}
 
-	hr = &HttpClient{
+	hr = &Client{
 		Transport: transport,
 		Client:    client,
 		Timeout:   timeout,
@@ -38,10 +38,10 @@ func NewHttpClient(timeout time.Duration) (hr *HttpClient) {
 
 // Do sends an HTTP request and returns an HTTP response, following
 // policy (e.g. redirects, cookies, auth) as configured on the client.
-// If a non-zero timeout has been set on the HttpClient, the request
+// If a non-zero timeout has been set on the Client, the request
 // will be cancled if the duration has been reached before the request
 // has completed.
-func (hr *HttpClient) Do(req *http.Request) (rsp *http.Response, err error) {
+func (hr *Client) Do(req *http.Request) (rsp *http.Response, err error) {
 
 	rspCh := make(chan *http.Response)
 	errCh := make(chan error)
