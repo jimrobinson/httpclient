@@ -6,9 +6,10 @@ import (
 	"time"
 )
 
-// Client configures a timeout on the reciept of response headers
-// and the read of response bodys from an http server.  It treats the
-// configured timeout as absolute, not as a deadline.
+// Client configures a timeout on the reciept of response headers and
+// the read of response bodys from an http server.  It treats the
+// configured timeout as absolute, not as a deadline that resets per
+// successful read operation.
 type Client struct {
 	Transport *http.Transport
 	Client    *http.Client
