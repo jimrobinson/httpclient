@@ -23,8 +23,8 @@ import "net/http"
 import "time"
 ```
 
-Decide on a timeout for your client, and create a new *HttpClient to
-dispatch your requests:
+Decide on a timeout for your client, and create a new
+*httpclient.Client to dispatch your requests:
 
 ```go
 timeout := time.Duration(1 * time.Second)
