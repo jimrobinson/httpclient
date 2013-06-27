@@ -52,15 +52,15 @@ func (hr *Client) Do(req *http.Request) (rsp *http.Response, err error) {
 		timeoutCh = time.After(hr.Timeout)
 	}
 
-	go func() {
-		rsp, err = hr.Client.Do(req)
+	go func(req *http.Request) {
+		rsp, err := hr.Client.Do(req)
 		if err != nil {
 			errCh <- err
 			rspCh <- rsp
 		} else {
 			rspCh <- rsp
 		}
-	}()
+	}(req)
 
 	var now time.Time
 
