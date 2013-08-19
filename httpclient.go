@@ -11,8 +11,8 @@ import (
 // configured timeout as absolute, not as a deadline that resets per
 // successful read operation.
 type Client struct {
+	http.Client
 	Transport *http.Transport
-	Client    *http.Client
 	Timeout   time.Duration
 }
 
@@ -24,13 +24,13 @@ func NewClient(timeout time.Duration) (hr *Client) {
 		ResponseHeaderTimeout: timeout,
 	}
 
-	client := &http.Client{
+	client := http.Client{
 		Transport: transport,
 	}
 
 	hr = &Client{
-		Transport: transport,
 		Client:    client,
+		Transport: transport,
 		Timeout:   timeout,
 	}
 
@@ -67,7 +67,6 @@ func (hr *Client) Do(req *http.Request) (rsp *http.Response, err error) {
 	select {
 	case err = <-errCh:
 		rsp = <-rspCh
-		err = fmt.Errorf("error requesting %s: %v", req.URL, err)
 	case now = <-timeoutCh:
 		go hr.Transport.CancelRequest(req)
 		err = fmt.Errorf("error requesting %s: read timed out at %s after waiting %s", req.URL, now.Format(time.RFC3339), hr.Timeout)
