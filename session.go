@@ -9,13 +9,15 @@ import (
 )
 
 type Session interface {
-	Username(uri *url.URL, realm string) (username string, err error)
-
-	Password(uri *url.URL, realm string) (password string, err error)
+	Login(uri *url.URL, realm string) (username, password string, err error)
 
 	Counter(nonce string) string
 
 	CNonce() (cnonce string, err error)
+
+	Authorization(uri *url.URL) (auth string)
+
+	SetAuthorization(uri *url.URL, domain []string, auth string)
 
 	DigestCredentials(uri *url.URL) (cred string)
 
@@ -28,9 +30,21 @@ type Session interface {
 	NewProxyReadCloser() ProxyReadCloser
 }
 
+type session struct {
+	sync.RWMutex
+	credentials Credentials
+	authcache   *AuthCache
+	md5cred     map[string]string
+	md5sess     map[string]string
+	counter     *NonceCounter
+	rcDir       string
+	rcLimit     int
+}
+
 func NewSession(credentials Credentials, nonceCap int, dir string, limit int) Session {
 	return &session{
 		credentials: credentials,
+		authcache:   NewAuthCache(),
 		md5cred:     make(map[string]string),
 		md5sess:     make(map[string]string),
 		counter:     NewNonceCounter(nonceCap),
@@ -39,22 +53,8 @@ func NewSession(credentials Credentials, nonceCap int, dir string, limit int) Se
 	}
 }
 
-type session struct {
-	sync.RWMutex
-	credentials Credentials
-	md5cred     map[string]string
-	md5sess     map[string]string
-	counter     *NonceCounter
-	rcDir       string
-	rcLimit     int
-}
-
-func (session *session) Username(uri *url.URL, realm string) (username string, err error) {
-	return session.credentials.Username(uri, realm)
-}
-
-func (session *session) Password(uri *url.URL, realm string) (password string, err error) {
-	return session.credentials.Password(uri, realm)
+func (session *session) Login(uri *url.URL, realm string) (username, password string, err error) {
+	return session.credentials.Login(uri, realm)
 }
 
 func (session *session) Counter(nonce string) string {
@@ -72,6 +72,35 @@ func (session *session) CNonce() (cnonce string, err error) {
 	}
 	cnonce = base64.StdEncoding.EncodeToString(buf)
 	return
+}
+
+func (session *session) Authorization(uri *url.URL) (auth string) {
+	session.RLock()
+	defer session.RUnlock()
+	return session.authcache.Get(uri)
+}
+
+func (session *session) SetAuthorization(uri *url.URL, domain []string, auth string) {
+	if domain == nil || len(domain) == 0 {
+		root := &url.URL{
+			Scheme:   uri.Scheme,
+			Opaque:   uri.Opaque,
+			User:     uri.User,
+			Host:     uri.Host,
+			Path:     "/",
+			RawQuery: "",
+			Fragment: "",
+		}
+		session.authcache.Set(root, auth)
+		return
+	}
+
+	for _, s := range domain {
+		ref, err := url.Parse(s)
+		if err == nil {
+			session.authcache.Set(uri.ResolveReference(ref), auth)
+		}
+	}
 }
 
 func (session *session) DigestCredentials(uri *url.URL) (md5cred string) {

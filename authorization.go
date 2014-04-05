@@ -38,12 +38,7 @@ func (challenge *Challenge) Authorization(session Session, req *http.Request) (a
 }
 
 func (challenge *Challenge) Basic(session Session, req *http.Request) (auth string, err error) {
-	username, err := session.Username(req.URL, challenge.Realm)
-	if err != nil {
-		return
-	}
-
-	password, err := session.Password(req.URL, challenge.Realm)
+	username, password, err := session.Login(req.URL, challenge.Realm)
 	if err != nil {
 		return
 	}
@@ -57,7 +52,7 @@ func (challenge *Challenge) Basic(session Session, req *http.Request) (auth stri
 
 func (challenge *Challenge) Digest(session Session, req *http.Request) (auth string, err error) {
 
-	username, err := session.Username(req.URL, challenge.Realm)
+	username, password, err := session.Login(req.URL, challenge.Realm)
 	if err != nil {
 		return
 	}
@@ -95,12 +90,6 @@ func (challenge *Challenge) Digest(session Session, req *http.Request) (auth str
 	case "", "MD5", "MD5-sess":
 		ha1 = session.DigestCredentials(req.URL)
 		if ha1 == "" {
-			var password string
-			password, err = session.Password(req.URL, challenge.Realm)
-			if err != nil {
-				return
-			}
-
 			h := md5.New()
 
 			io.WriteString(h, username)
