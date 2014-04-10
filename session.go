@@ -81,6 +81,9 @@ func (session *session) Authorization(uri *url.URL) (auth string) {
 }
 
 func (session *session) SetAuthorization(uri *url.URL, domain []string, auth string) {
+	session.Lock()
+	defer session.Unlock()
+
 	if domain == nil || len(domain) == 0 {
 		root := &url.URL{
 			Scheme:   uri.Scheme,
@@ -106,8 +109,6 @@ func (session *session) SetAuthorization(uri *url.URL, domain []string, auth str
 func (session *session) DigestCredentials(uri *url.URL) (md5cred string) {
 	session.RLock()
 	defer session.RUnlock()
-	// this isn't right, we need to set up something to allow
-	// to prefix matching against paths
 	return session.md5cred[uri.Host+":/"]
 }
 
