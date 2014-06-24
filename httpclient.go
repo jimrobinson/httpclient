@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var traceId = "github.com/jimrobinson/httpclient"
+
 // Client configures a timeout on the reciept of response headers and
 // the read of response bodys from an http server.  It treats the
 // configured timeout as absolute, not as a deadline that resets per
@@ -43,7 +45,6 @@ func NewClient(timeout time.Duration) (hr *Client) {
 // will be cancled if the duration has been reached before the request
 // has completed.
 func (hr *Client) Do(req *http.Request) (rsp *http.Response, err error) {
-
 	rspCh := make(chan *http.Response)
 	errCh := make(chan error)
 
@@ -69,7 +70,8 @@ func (hr *Client) Do(req *http.Request) (rsp *http.Response, err error) {
 		rsp = <-rspCh
 	case now = <-timeoutCh:
 		go hr.Transport.CancelRequest(req)
-		err = fmt.Errorf("error requesting %s: read timed out at %s after waiting %s", req.URL, now.Format(time.RFC3339), hr.Timeout)
+		err = fmt.Errorf("error requesting %s: read timed out at %s after waiting %s",
+			req.URL, now.Format(time.RFC3339), hr.Timeout)
 	case rsp = <-rspCh:
 		err = nil
 	}
