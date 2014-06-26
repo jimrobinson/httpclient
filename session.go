@@ -48,13 +48,14 @@ type Session interface {
 	// the specified server
 	DigestSession(server string) (hash string)
 
-	// Duplicate creates n clones of rc, and closes rc.  The
-	// returned io.ReadCloser must be closed by the caller.
+	// Duplicate creates n clones of rc.  The returned io.ReadCloser
+	// must be closed by the caller.  The original rc will always
+	// be closed when the function returns.
 	Duplicate(rc io.ReadCloser, n int) (clone []io.ReadCloser, err error)
 
 	// NewProxyReadCloser returns an implementation of ProxyReadCloser,
-	// useful to process a request Body without discarding its
-	// contents.
+	// useful for processing a request Body without losing the
+	// ability to then send the Body in a subsequent request.
 	NewProxyReadCloser() ProxyReadCloser
 }
 
