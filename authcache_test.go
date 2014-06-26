@@ -26,7 +26,7 @@ func TestAuthPathsSort(t *testing.T) {
 	sort.Sort(set)
 	for i, v := range set {
 		if v.Path != ordered[i].Path {
-			t.Errorf("%d: expected %v, got %v\n", ordered[i], v)
+			t.Errorf("%d: expected %v, got %v\n", i, ordered[i], v)
 		}
 	}
 }
@@ -64,7 +64,7 @@ func BenchmarkAuthPathsSort(b *testing.B) {
 }
 
 func BenchmarkAuthPathsSet(b *testing.B) {
-	ops := 10;
+	ops := 10
 	uris := make([]*url.URL, ops)
 	auth := make([]string, ops)
 

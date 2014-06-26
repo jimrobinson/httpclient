@@ -69,7 +69,7 @@ func TestParseChallenge(t *testing.T) {
 
 		for j, c := range v.Parsed {
 			if !reflect.DeepEqual(p[j], c) {
-				t.Errorf("parseTests[%d][%d]: not DeepEqual:\n%q\n%q\n",
+				t.Errorf("parseTests[%d][%d]: not DeepEqual:\n%v\n%v\n",
 					i, j, p[j], c)
 			}
 		}
@@ -82,7 +82,7 @@ func TestBasicChallenge(t *testing.T) {
 	password := "open sesame"
 	expected := "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
 
-	credentials := NewCredentials(username, password)
+	credentials := &OrderedCredentials{[]Credential{NewCredential("example.com", "/", username, password)}}
 	challenge := &basicChallenge
 
 	session := NewSession(credentials, 1000, "", -1)
@@ -116,7 +116,7 @@ func TestDigestChallenge(t *testing.T) {
 	password := "Circle Of Life"
 	expected := `Digest username="Mufasa", realm="testrealm@host.com", nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093", uri="/dir/index.html", qop=auth, nc=00000001, cnonce="0a4f113b", response="6629fae49393a05397450978507c4ef1", opaque="5ccc069c403ebaf9f0171e9517f40e41"`
 
-	credentials := NewCredentials(username, password)
+	credentials := &OrderedCredentials{[]Credential{NewCredential("host.com", "/", username, password)}}
 	challenge := &digestChallenge1
 	challenge.Qop = []string{"auth"}
 
