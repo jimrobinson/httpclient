@@ -80,11 +80,11 @@ func (hr *Client) Do(req *http.Request) (rsp *http.Response, err error) {
 	return
 }
 
-// AuthDo performs the same work as Do, but additionally
+// DoAuth performs the same work as Do, but additionally
 // attempts to handle WWW-Authenticate requests using
 // the provided session.  An error is returned if the session
 // is nil.
-func (hr *Client) AuthDo(req *http.Request, session Session) (rsp *http.Response, err error) {
+func (hr *Client) DoAuth(req *http.Request, session Session) (rsp *http.Response, err error) {
 	if session == nil {
 		err = fmt.Errorf("invalid session: nil")
 		return
