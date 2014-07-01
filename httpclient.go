@@ -2,6 +2,7 @@ package httpclient
 
 import (
 	"fmt"
+	"github.com/jimrobinson/trace"
 	"io"
 	"net/http"
 	"time"
@@ -86,28 +87,30 @@ func (hr *Client) Do(req *http.Request) (rsp *http.Response, err error) {
 // is nil.
 func (hr *Client) DoAuth(req *http.Request, session Session) (rsp *http.Response, err error) {
 	if session == nil {
-		err = fmt.Errorf("invalid session: nil")
-		return
+		if fn, ok := trace.M(traceId, trace.Info); ok {
+			trace.T(fn, "httpclient.Client.DoAuth called with a nil session, defaulting to httpclient.Client.Do")
+		}
+		return hr.Do(req)
 	}
 
 	auth := session.Authorization(req.URL)
 	if auth != "" {
-		req.Header.Add("Authorization", auth)
+		req.Header.Set("Authorization", auth)
 	}
 
-	// copy the request body if it's possible we will have to
-	// retry the request
+	// copy the request body so that we may
+	// resubmit it if we need to re-authorize
 	var body io.ReadCloser
-	if auth == "" && req.Body != nil {
+	if req.Body != nil {
 		var clone []io.ReadCloser
 		clone, err = session.Duplicate(req.Body, 2)
 		if err != nil {
 			return
 		}
-
 		req.Body, body = clone[0], clone[1]
-		defer req.Body.Close()
-		defer body.Close()
+		for i := range clone {
+			defer clone[i].Close()
+		}
 	}
 
 	rsp, err = hr.Do(req)
@@ -140,7 +143,7 @@ func (hr *Client) DoAuth(req *http.Request, session Session) (rsp *http.Response
 			}
 
 			if auth != "" {
-				req.Header.Add("Authorization", auth)
+				req.Header.Set("Authorization", auth)
 
 				// if  the request body is not nil
 				// and we have additional challenges
@@ -157,8 +160,9 @@ func (hr *Client) DoAuth(req *http.Request, session Session) (rsp *http.Response
 						}
 
 						req.Body, body = clone[0], clone[1]
-						defer req.Body.Close()
-						defer body.Close()
+						for i := range clone {
+							defer clone[i].Close()
+						}
 					}
 				}
 
