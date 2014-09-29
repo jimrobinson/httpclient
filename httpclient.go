@@ -2,7 +2,6 @@ package httpclient
 
 import (
 	"fmt"
-	"github.com/jimrobinson/trace"
 	"io"
 	"net/http"
 	"time"
@@ -87,9 +86,6 @@ func (hr *Client) Do(req *http.Request) (rsp *http.Response, err error) {
 // is nil.
 func (hr *Client) DoAuth(req *http.Request, session Session) (rsp *http.Response, err error) {
 	if session == nil {
-		if fn, ok := trace.M(traceId, trace.Info); ok {
-			trace.T(fn, "httpclient.Client.DoAuth called with a nil session, defaulting to httpclient.Client.Do")
-		}
 		return hr.Do(req)
 	}
 
