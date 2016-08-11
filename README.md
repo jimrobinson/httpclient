@@ -3,6 +3,10 @@
 Simple wrapper around the standard go net/http library to add timeouts
 to http requests.
 
+NOTE - it is now possible to timeout requests using the standard go library
+either by using
+
+
 ## Installation:
 
 This library is compatible with Go1.1.
