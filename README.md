@@ -4,8 +4,9 @@ Simple wrapper around the standard go net/http library to add timeouts
 to http requests.
 
 NOTE - it is now possible to timeout requests using the standard go library
-either by using
-
+either by using the Timeout field in https://golang.org/pkg/net/http/#Client
+or by creating your own https://golang.org/pkg/net/http/#RoundTripper and
+using the lower level timeout cabilities surfaced there.
 
 ## Installation:
 
